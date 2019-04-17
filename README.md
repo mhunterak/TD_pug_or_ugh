@@ -1,4 +1,23 @@
 # TD Project 11: Pug or Ugh
+project by Maxwell Hunter @mhunterak
+
+## Setup instructions
+
+run the folloring commands from the root directory:
+
+set up venv:
+> python -m venv .env
+activate venv:
+> source .env/bin/activate
+install requirements:
+> pip install -r requirements.txt
+migrate database:
+> python backend/manage.py migrate
+import default data:
+> python backend/pugorugh/scripts/data_input.py
+run the server:
+> python backend/manage.py runserver
+
 
 ## Requirements
 

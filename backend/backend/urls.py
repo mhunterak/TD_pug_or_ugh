@@ -16,12 +16,12 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.conf.urls import url, include
 
 from rest_framework.authtoken import views
 
 urlpatterns = [
-    path(r'admin/', admin.site.urls),
-    path(r'', include('pugorugh.urls')),
-    path(r'api-token-auth/', views.obtain_auth_token),
+    url(r'^/admin/', admin.site.urls, name='admin'),
+    url(r'^', include('pugorugh.urls')),
+    url(r'^/api-token-auth/', views.obtain_auth_token, name='auth'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

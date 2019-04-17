@@ -24,7 +24,7 @@ class Dog(models.Model):
     large = "u" for unknown
     '''
     # XC: Add additional data fields to the Models
-    # which increase the application’s functionality.
+    # which increase the applications functionality.
     date_added = models.DateField(default=date.today)
     temperment = models.CharField(max_length=255, blank=True, default="")
     vaccinated = models.BooleanField(default=False)
@@ -39,7 +39,7 @@ class UserDog(models.Model):
     # "l" for liked, "d" for disliked
     status = models.CharField(max_length=1)
     # XC: Add additional data fields to the Models
-    # which increase the application’s functionality.
+    # which increase the applications functionality.
     rating = models.IntegerField(default=5)
 
 

@@ -70,6 +70,7 @@ class UserPrefSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.UserPref
         fields = (
+            'id',
             'user',
             'age',
             'gender',

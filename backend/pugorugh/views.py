@@ -163,7 +163,7 @@ class DeleteDog(DestroyAPIView):
 class UndecidedBreedNext(APIView):
     '''
     XC - Additional routes are added to site which
-    increase the application’s functionality.
+    increase the applications functionality.
 
     This view gets the next dog that you haven't decided on yet,
     with the breed you choose
@@ -256,13 +256,14 @@ class Undecided(DestroyAPIView):
 
 
 # /api/user/preferences/
-class SetUserPref(mixins.CreateModelMixin, RetrieveUpdateAPIView):
+class SetUserPref(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     queryset = models.UserPref.objects.all()
     serializer_class = serializers.UserPrefSerializer
     lookup_field = 'userpref'
 
     def get(self, request, format=None, *args, **kwargs):
+        print("GET is OK")
         userPref = get_object_or_404(
             models.UserPref, user__id=request.user.id)
         serializer = serializers.UserPrefSerializer(userPref)
@@ -280,6 +281,7 @@ class SetUserPref(mixins.CreateModelMixin, RetrieveUpdateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
+        # self.check_permissions(clone_request(self.request, 'POST'))
         data = {
             'user': request.user.id,
             'age': request.data['age'],
