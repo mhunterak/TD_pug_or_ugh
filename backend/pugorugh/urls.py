@@ -23,7 +23,6 @@ urlpatterns = format_suffix_patterns([
             permanent=True
         )),
     # index
-    url(r'^', TemplateView.as_view(template_name='index.html')),
 
     # API functions
     # To change or set user preferences
@@ -51,4 +50,6 @@ urlpatterns = format_suffix_patterns([
     #    /api/dog/<pk>/undecided/
     url(r'^api/dog/(?P<pk>-?\d+)/undecided/$',
         views.Undecided.as_view(), name='Undecided'),
+
+    url(r'^', TemplateView.as_view(template_name='index.html')),
 ])

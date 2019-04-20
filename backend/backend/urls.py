@@ -22,6 +22,6 @@ from rest_framework.authtoken import views
 
 urlpatterns = [
     url(r'^/admin/', admin.site.urls, name='admin'),
-    url(r'^', include('pugorugh.urls')),
     url(r'^/api-token-auth/', views.obtain_auth_token, name='auth'),
+    url(r'', include('pugorugh.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

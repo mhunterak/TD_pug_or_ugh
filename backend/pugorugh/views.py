@@ -58,13 +58,9 @@ class LikedNext(APIView):
         dogs = models.Dog.objects.all().filter(
             Q(userdog__status__in=('l')) &
             Q(userdog__user__id=request.user.id) &
-            Q(id__gt=pk)
-        ).filter(gender__in=userPref.gender
-                 ).filter(size__in=userPref.size
-                          ).filter(age__in=get_age_range(userPref.age))
-        serializer = self.get_serializer(dog.first(), data=self.request.data)
-        if dogs.first() is None:
-            return Response(serializer.data, status=status.HTTP_404_NOT_FOUND)
+            Q(id__gte=pk)
+        )
+        serializer = serializers.DogSerializer(dogs.first())
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -76,14 +72,11 @@ class DislikedNext(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, pk, *args, **kwargs):
-        userPref = models.UserPref.objects.get(user__id=request.user.id)
         dogs = models.Dog.objects.all().filter(
             Q(userdog__status__in=('d')) &
             Q(userdog__user__id=request.user.id) &
             Q(id__gt=pk)
-        ).filter(gender__in=userPref.gender
-                 ).filter(size__in=userPref.size
-                          ).filter(age__in=get_age_range(userPref.age))
+        )
         serializer = serializers.DogSerializer(dogs.first())
         if dogs.first() is None:
             return Response(serializer.data, status=status.HTTP_404_NOT_FOUND)
@@ -196,7 +189,6 @@ class Liked(mixins.UpdateModelMixin, CreateAPIView):
     model = models.UserDog
 
     def put(self, request, pk):
-        self.check_permissions(clone_request(self.request, 'POST'))
         dog = models.Dog.objects.get(id=pk)
         data = {
             'status': 'l',
@@ -216,7 +208,6 @@ class Disliked(mixins.CreateModelMixin, RetrieveUpdateAPIView):
     model = models.UserDog
 
     def put(self, request, pk, format=None, *args, **kwargs):
-        self.check_permissions(clone_request(self.request, 'POST'))
         dog = models.Dog.objects.get(id=pk)
         data = {
             'status': 'd',
@@ -236,7 +227,6 @@ class Undecided(DestroyAPIView):
     model = models.UserDog
 
     def put(self, request, pk, format=None, *args, **kwargs):
-        self.check_permissions(clone_request(self.request, 'DELETE'))
         userdog = models.UserDog.objects.all().filter(
             dog__id=pk).filter(user__id=request.user.id)
         dog = models.Dog.objects.get(id=pk)
@@ -273,7 +263,8 @@ class SetUserPref(APIView):
         self.check_permissions(clone_request(self.request, 'POST'))
         userPref = get_object_or_404(models.UserPref,
                                      user=self.request.user)
-        serializer = self.get_serializer(userPref, data=self.request.data)
+        serializer = serializers.UserPrefSerializer(
+            userPref, data=self.request.data)
         serializer.is_valid()
         if userPref is None:
             self.perform_create(serializer)
