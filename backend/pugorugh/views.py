@@ -58,9 +58,10 @@ class LikedNext(APIView):
         dogs = models.Dog.objects.all().filter(
             Q(userdog__status__in=('l')) &
             Q(userdog__user__id=request.user.id) &
-            Q(id__gte=pk)
+            Q(id__gt=pk)
         )
         serializer = serializers.DogSerializer(dogs.first())
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -93,14 +94,18 @@ class UndecidedNext(APIView):
     def get(self, request, pk, format=None, *args, **kwargs):
         userPref = get_object_or_404(models.UserPref, user__id=request.user.id)
         dogs = models.Dog.objects.all().exclude(
-            Q(userdog__status__in=('d', 'l')) &
-            Q(userdog__user__id=request.user.id)
+            Q(userdog__status__in=('d', 'l'))).exclude(
+            Q(userdog__user__id=request.user.id)).exclude(
+            Q(id__lte=pk)
         ).filter(gender__in=userPref.gender
                  ).filter(size__in=userPref.size
-                          ).filter(age__in=get_age_range(userPref.age)
-                                   ).filter(~Q(id=pk))
+                          ).filter(age__in=get_age_range(userPref.age))
         serializer = serializers.DogSerializer(dogs.first())
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if dogs.first() is None:
+            return Response(serializer.data,
+                            status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # EXTRA CREDIT
@@ -250,19 +255,24 @@ class SetUserPref(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     queryset = models.UserPref.objects.all()
     serializer_class = serializers.UserPrefSerializer
+    model = models.UserPref
     lookup_field = 'userpref'
 
     def get(self, request, format=None, *args, **kwargs):
-        print("GET is OK")
-        userPref = get_object_or_404(
+        print("userpref get")
+        userPref = models.UserPref.objects.get(
             models.UserPref, user__id=request.user.id)
-        serializer = serializers.UserPrefSerializer(userPref)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if userPref is not None:
+            serializer = serializers.UserPrefSerializer(userPref)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response('User Preferences not set',
+                            status=status.HTTP_404_NOT_FOUND)
 
     def update(self, request, *args, **kwargs):
         self.check_permissions(clone_request(self.request, 'POST'))
-        userPref = get_object_or_404(models.UserPref,
-                                     user=self.request.user)
+        userPref = models.UserPref.get(models.UserPref,
+                                       user=self.request.user)
         serializer = serializers.UserPrefSerializer(
             userPref, data=self.request.data)
         serializer.is_valid()
@@ -272,17 +282,24 @@ class SetUserPref(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
-        # self.check_permissions(clone_request(self.request, 'POST'))
-        data = {
-            'user': request.user.id,
-            'age': request.data['age'],
-            'gender': request.data['gender'],
-            'size': request.data['size'],
-        }
-        serializer = serializers.UserPrefSerializer(data=data)
-        serializer.is_valid()
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            userPref = models.UserPref.objects.get(user=self.request.user)
+            serializer = serializers.UserPrefSerializer(
+                userPref,
+                instance=userPref,
+                data=self.request.data)
+
+        except models.UserPref.DoesNotExist:
+            data = {
+                'user': request.user.id,
+                'age': request.data['age'],
+                'gender': request.data['gender'],
+                'size': request.data['size'],
+            }
+            serializer = serializers.UserPrefSerializer(data=data)
+            serializer.is_valid(data)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # AUTH

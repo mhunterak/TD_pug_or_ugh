@@ -51,5 +51,15 @@ urlpatterns = format_suffix_patterns([
     url(r'^api/dog/(?P<pk>-?\d+)/undecided/$',
         views.Undecided.as_view(), name='Undecided'),
 
+    #   EXTRA CREDIT:
+
+    #    /api/dog/add/
+    url(r'^api/dog/add/$',
+        views.AddDog.as_view(), name='AddDog'),
+
+    #    /api/dog/<pk>/delete/
+    url(r'^api/dog/(?P<pk>-?\d+)/disliked/$',
+        views.DeleteDog.as_view(), name='DeleteDog'),
+
     url(r'^', TemplateView.as_view(template_name='index.html')),
 ])
